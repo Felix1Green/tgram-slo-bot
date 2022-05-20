@@ -1,13 +1,20 @@
 package go_handler
 
-import tgbotapi "github.com/Syfaro/telegram-bot-api"
+import (
+	tgbotapi "github.com/Syfaro/telegram-bot-api"
+	"tgram-slo-bot/internal"
+)
 
-type Handler struct{}
-
-func New() *Handler {
-	return &Handler{}
+type Handler struct {
+	log internal.Logger
 }
 
-func (t *Handler) Handle(update *tgbotapi.Update) {
-	// some logic stuff
+func New(logger internal.Logger) *Handler {
+	return &Handler{
+		log: logger,
+	}
+}
+
+func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+	//pollMessage := tgbotapi.
 }

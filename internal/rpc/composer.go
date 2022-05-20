@@ -3,20 +3,20 @@ package rpc
 import (
 	"github.com/Syfaro/telegram-bot-api"
 	"tgram-slo-bot/internal"
-	"tgram-slo-bot/internal/rpc/go_handler"
 )
 
 type HandlerComposer struct {
-	bot          *tgbotapi.BotAPI
-	updateConfig tgbotapi.UpdateConfig
-	goHandler    *go_handler.Handler
+	log           internal.Logger
+	bot           *tgbotapi.BotAPI
+	updateConfig  tgbotapi.UpdateConfig
+	handlerConfig map[string]internal.HandleFunc
 }
 
 type specifications struct {
 	TelegramToken string `split_words:"true"`
 }
 
-func NewFromEnv() (*HandlerComposer, error) {
+func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc) (*HandlerComposer, error) {
 	options := &specifications{}
 	err := internal.EnvOptions("", options)
 	if err != nil {
@@ -30,8 +30,10 @@ func NewFromEnv() (*HandlerComposer, error) {
 	u.Timeout = 60
 
 	return &HandlerComposer{
-		bot:          bot,
-		updateConfig: u,
+		log:           logger,
+		handlerConfig: config,
+		bot:           bot,
+		updateConfig:  u,
 	}, nil
 }
 
@@ -44,12 +46,10 @@ func (t *HandlerComposer) Listen() error {
 		if update.Message == nil || update.Message.Text == "" {
 			continue
 		}
-		switch update.Message.Text {
-		case "/go":
-			t.goHandler.Handle(&update)
-		default:
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "I cant do this shit")
-			// навесить backoff на отправку сообщения
+		if handler, ok := t.handlerConfig[update.Message.Text]; ok {
+			handler(&update, t.bot)
+		} else {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "I cant do this")
 			_, _ = t.bot.Send(msg)
 		}
 	}

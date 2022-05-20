@@ -1,0 +1,11 @@
+# github.com/Syfaro/telegram-bot-api v4.6.4+incompatible
+## explicit
+github.com/Syfaro/telegram-bot-api
+# github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+## explicit
+# github.com/kelseyhightower/envconfig v1.4.0
+## explicit
+github.com/kelseyhightower/envconfig
+# github.com/technoweenie/multipartstreamer v1.0.1
+## explicit
+github.com/technoweenie/multipartstreamer
