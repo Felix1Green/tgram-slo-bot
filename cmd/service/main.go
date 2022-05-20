@@ -15,24 +15,24 @@ func main() {
 	var logger internal.Logger
 
 	// init handlers
-	var(
-		goHandler = go_handler.New(logger)
-		flipHandler = flip_handler.New(logger)
+	var (
+		goHandler     = go_handler.New(logger)
+		flipHandler   = flip_handler.New(logger)
 		randomHandler = random_handler.New(logger)
 	)
 
 	handlerComposer, err := rpc.NewFromEnv(logger, map[string]internal.HandleFunc{
-		"/go": goHandler.Handle,
-		"/flip": flipHandler.Handle,
+		"/go":     goHandler.Handle,
+		"/flip":   flipHandler.Handle,
 		"/random": randomHandler.Handle,
 	})
-	if err != nil{
-		logger.Error(context.Background(), fmt.Sprintf("Handler composer initialization failed with error: %s", err.Error())
+	if err != nil {
+		logger.Error(context.Background(), fmt.Sprintf("Handler composer initialization failed with error: %s", err.Error()))
 		return
 	}
 
 	err = handlerComposer.Listen()
-	if err != nil{
+	if err != nil {
 		logger.Error(context.Background(), err)
 	}
 }
