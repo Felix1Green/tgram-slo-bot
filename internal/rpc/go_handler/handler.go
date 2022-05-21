@@ -16,5 +16,5 @@ func New(logger internal.Logger) *Handler {
 }
 
 func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	//pollMessage := tgbotapi.
+	//pollMes
 }
