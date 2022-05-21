@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"github.com/Syfaro/telegram-bot-api"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"tgram-slo-bot/internal"
 )
 
@@ -38,10 +38,7 @@ func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc) (
 }
 
 func (t *HandlerComposer) Listen() error {
-	updates, err := t.bot.GetUpdatesChan(t.updateConfig)
-	if err != nil {
-		return err
-	}
+	updates := t.bot.GetUpdatesChan(t.updateConfig)
 	for update := range updates {
 		if update.Message == nil || update.Message.Text == "" {
 			continue
@@ -49,7 +46,7 @@ func (t *HandlerComposer) Listen() error {
 		if handler, ok := t.handlerConfig[update.Message.Text]; ok {
 			handler(&update, t.bot)
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "I cant do this")
+			msg := tgbotapi.NewMessage(update.FromChat().ID, "I cant do this")
 			_, _ = t.bot.Send(msg)
 		}
 	}

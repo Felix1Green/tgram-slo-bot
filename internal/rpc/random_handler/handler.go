@@ -3,7 +3,7 @@ package random_handler
 import (
 	"context"
 	"fmt"
-	tgbotapi "github.com/Syfaro/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math/rand"
 	"tgram-slo-bot/internal"
 )
@@ -32,10 +32,10 @@ func (h *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			h.log.Error(ctx, err)
 		}
 	}()
-	_, max := h.getRequestBounds(update)
-	randomResult := rand.Intn(max)
+	min, max := h.getRequestBounds(update)
+	randomResult := rand.Intn(max-min) + min
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Случайное число: %d", randomResult))
+	msg := tgbotapi.NewMessage(update.FromChat().ID, fmt.Sprintf("Случайное число: %d", randomResult))
 	_, err = bot.Send(msg)
 }
 
