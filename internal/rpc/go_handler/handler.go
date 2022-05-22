@@ -27,7 +27,10 @@ func New(logger internal.Logger) *Handler {
 }
 
 func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	var err error
+	var (
+		err    error
+		chatID = update.FromChat().ID
+	)
 	defer func() {
 		if err != nil {
 			ctx := t.log.WithFields(context.Background(), map[string]interface{}{
@@ -37,7 +40,7 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 	}()
 
-	chatUsers, err := t.userStorage.GetChatUsers(update.FromChat().ID)
+	chatUsers, err := t.userStorage.GetChatUsers(chatID)
 	if err != nil {
 		return
 	}
@@ -45,7 +48,7 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	pollMessage := tgbotapi.SendPollConfig{
 		IsAnonymous: false,
 		BaseChat: tgbotapi.BaseChat{
-			ChatID: update.FromChat().ID,
+			ChatID: chatID,
 		},
 		Question: questionBuilder("Идешь?", chatUsers...),
 		Options: []string{
@@ -54,12 +57,12 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		},
 	}
 
-	_, err = bot.Send(pollMessage)
+	msg, err := bot.Send(pollMessage)
 	if err != nil {
 		return
 	}
 
-	//t.pollStorage.
+	err = t.pollStorage.CreateNewPoll(chatID, msg.Poll.ID)
 }
 
 func questionBuilder(questionString string, opts ...*tgbotapi.User) string {
