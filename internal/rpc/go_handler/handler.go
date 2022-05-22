@@ -20,9 +20,11 @@ type Handler struct {
 	pollStorage poll_storage.Storage
 }
 
-func New(logger internal.Logger) *Handler {
+func New(logger internal.Logger, userStorage chat_storage.Storage, pollStorage poll_storage.Storage) *Handler {
 	return &Handler{
-		log: logger,
+		log:         logger,
+		userStorage: userStorage,
+		pollStorage: pollStorage,
 	}
 }
 
