@@ -3,7 +3,7 @@ package flip_handler
 import (
 	"context"
 	"fmt"
-	tgbotapi "github.com/Syfaro/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math/rand"
 	"tgram-slo-bot/internal"
 )
@@ -42,6 +42,6 @@ func (h *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		flipResult = "ОРЕЛ"
 	}
 
-	message := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат: %s", flipResult))
+	message := tgbotapi.NewMessage(update.FromChat().ID, fmt.Sprintf("Результат: %s", flipResult))
 	_, err = bot.Send(message)
 }
