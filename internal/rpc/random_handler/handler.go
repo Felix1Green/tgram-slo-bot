@@ -33,7 +33,7 @@ func (h *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 	}()
 	min, max := h.getRequestBounds(update)
-	randomResult := rand.Intn(max-min) + min
+	randomResult := rand.Intn(max) + min
 
 	msg := tgbotapi.NewMessage(update.FromChat().ID, fmt.Sprintf("Случайное число: %d", randomResult))
 	_, err = bot.Send(msg)
