@@ -14,6 +14,10 @@ const (
 	componentName = "monitoring_worker"
 )
 
+type specifications struct {
+	TelegramToken string `split_words:"true"`
+}
+
 type Worker struct {
 	log         internal.Logger
 	pollStorage poll_storage.Storage
@@ -21,12 +25,22 @@ type Worker struct {
 	bot         *tgbotapi.BotAPI
 }
 
-func New(log internal.Logger, poll poll_storage.Storage, chat chat_storage.Storage) *Worker {
+func NewFromEnv(log internal.Logger, poll poll_storage.Storage, chat chat_storage.Storage) (*Worker, error) {
+	options := &specifications{}
+	err := internal.EnvOptions("", options)
+	if err != nil {
+		return nil, err
+	}
+	bot, err := tgbotapi.NewBotAPI(options.TelegramToken)
+	if err != nil {
+		return nil, err
+	}
 	return &Worker{
 		log:         log,
 		pollStorage: poll,
 		chatStorage: chat,
-	}
+		bot:         bot,
+	}, nil
 }
 
 func (w *Worker) Run() {

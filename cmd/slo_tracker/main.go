@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron"
+	"os"
+	"os/signal"
+	"syscall"
 	"tgram-slo-bot/internal/components/chat_storage"
 	"tgram-slo-bot/internal/components/logger"
 	"tgram-slo-bot/internal/components/poll_storage"
@@ -11,6 +16,9 @@ import (
 
 func main() {
 	log := logger.New()
+	scheduler := cron.New()
+	defer scheduler.Stop()
+
 	redisPool := &redis.Pool{
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
@@ -22,7 +30,21 @@ func main() {
 		pollStorage, _ = poll_storage.NewFromEnv(redisPool, log)
 	)
 
-	worker := monitoring.New(log, pollStorage, chatStorage)
+	worker, err := monitoring.NewFromEnv(log, pollStorage, chatStorage)
+	if err != nil {
+		log.Error(context.Background(), err)
+		return
+	}
+
 	// add cron
-	worker.Run()
+	err = scheduler.AddFunc("@every 15m", worker.Run)
+	if err != nil {
+		log.Error(context.Background(), err)
+		return
+	}
+	go scheduler.Start()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	<-sig
 }

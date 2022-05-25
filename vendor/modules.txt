@@ -11,6 +11,9 @@ github.com/gomodule/redigo/redis
 # github.com/kelseyhightower/envconfig v1.4.0
 ## explicit
 github.com/kelseyhightower/envconfig
+# github.com/robfig/cron v1.2.0
+## explicit
+github.com/robfig/cron
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
