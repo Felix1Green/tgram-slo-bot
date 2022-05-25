@@ -6,17 +6,18 @@ import (
 )
 
 type HandlerComposer struct {
-	log           internal.Logger
-	bot           *tgbotapi.BotAPI
-	updateConfig  tgbotapi.UpdateConfig
-	handlerConfig map[string]internal.HandleFunc
+	log               internal.Logger
+	bot               *tgbotapi.BotAPI
+	updateConfig      tgbotapi.UpdateConfig
+	handlerConfig     map[string]internal.HandleFunc
+	pollUpdateHandler internal.HandleFunc
 }
 
 type specifications struct {
 	TelegramToken string `split_words:"true"`
 }
 
-func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc) (*HandlerComposer, error) {
+func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc, pollHandler internal.HandleFunc) (*HandlerComposer, error) {
 	options := &specifications{}
 	err := internal.EnvOptions("", options)
 	if err != nil {
@@ -40,10 +41,12 @@ func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc) (
 func (t *HandlerComposer) Listen() error {
 	updates := t.bot.GetUpdatesChan(t.updateConfig)
 	for update := range updates {
-		if update.Message == nil || update.Message.Text == "" {
+		if update.Message == nil || update.Message.Text == "" || update.PollAnswer == nil {
 			continue
 		}
-		if handler, ok := t.handlerConfig[update.Message.Text]; ok {
+		if update.PollAnswer != nil {
+			t.pollUpdateHandler(&update, t.bot)
+		} else if handler, ok := t.handlerConfig[update.Message.Text]; ok {
 			handler(&update, t.bot)
 		} else {
 			msg := tgbotapi.NewMessage(update.FromChat().ID, "I cant do this")
