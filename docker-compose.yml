@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  redis:
+    image: "redis:7.0.0-alpine"
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+  service:
+    build:
+      context: ./
+      dockerfile: build/service.Dockerfile
+    ports:
+      - "8888:8888"
+    env_file:
+      - dev.env
+    restart: always
+    depends_on:
+      - redis
+  cron:
+    build:
+      context: ./
+      dockerfile: build/cron.Dockerfile
+    env_file:
+      - dev.env
+    ports:
+      - "8889:8889"
+    restart: always
+    depends_on:
+      - redis

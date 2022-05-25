@@ -7,8 +7,6 @@ import (
 
 type Logger interface {
 	Error(ctx context.Context, args ...interface{})
-	Debug(ctx context.Context, args ...interface{})
-	WithError(ctx context.Context, err error) context.Context
 	WithFields(ctx context.Context, fields map[string]interface{}) context.Context
 }
 
