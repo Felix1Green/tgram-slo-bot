@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"strconv"
+	"strings"
 	"tgram-slo-bot/internal"
 	"time"
 )
 
 var (
-	componentName = "redis_poll_storage"
-	mainKey       = fmt.Sprintf("%s:poll_keys", componentName)
+	componentName     = "redis_poll_storage"
+	mainKey           = fmt.Sprintf("%s:poll_keys", componentName)
+	IncorrectInputKey = fmt.Errorf("inserted key is incorrect")
 )
 
 // TODO: add backoff on redis commands
@@ -18,6 +21,12 @@ var (
 //	BackoffMaxValue int   `split_words:"true"`
 //	BackoffMaxTries int64 `split_words:"true"`
 //}
+
+type Poll struct {
+	ChatID           int64
+	PollID           string
+	CreatedTimeStamp int64
+}
 
 type RedisPollStorage struct {
 	log  internal.Logger
@@ -59,6 +68,25 @@ func (s *RedisPollStorage) CreateNewPoll(chatID int64, pollID string) error {
 	_, err = conn.Do("SADD", mainKey, s.createPollTimestampKey(chatID, pollID))
 
 	return err
+}
+
+func (s *RedisPollStorage) GetPollInfoFromKey(key string) (*Poll, error) {
+	splitter := strings.Split(key, ":")
+	if len(splitter) < 4 {
+		return nil, IncorrectInputKey
+	}
+
+	var (
+		chatID, _    = strconv.Atoi(splitter[1])
+		pollID       = splitter[2]
+		timestamp, _ = strconv.Atoi(splitter[3])
+	)
+
+	return &Poll{
+		ChatID:           int64(chatID),
+		PollID:           pollID,
+		CreatedTimeStamp: int64(timestamp),
+	}, nil
 }
 
 func (s *RedisPollStorage) RemovePoll(pollKey string) error {
