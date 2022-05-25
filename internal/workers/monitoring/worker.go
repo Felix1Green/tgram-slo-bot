@@ -8,6 +8,7 @@ import (
 	"tgram-slo-bot/internal"
 	"tgram-slo-bot/internal/components/chat_storage"
 	"tgram-slo-bot/internal/components/poll_storage"
+	"time"
 )
 
 const (
@@ -43,6 +44,14 @@ func NewFromEnv(log internal.Logger, poll poll_storage.Storage, chat chat_storag
 	}, nil
 }
 
+func (w *Worker) IsPollOutDated(created int64) bool {
+	outdatedTime := time.Now().Add(-15 * time.Minute).Unix()
+	if created < outdatedTime {
+		return true
+	}
+	return false
+}
+
 func (w *Worker) Run() {
 	var (
 		err error
@@ -67,6 +76,11 @@ func (w *Worker) Run() {
 		if err != nil {
 			return
 		}
+		if w.IsPollOutDated(poll.CreatedTimeStamp) {
+			_ = w.pollStorage.RemovePoll(key)
+		} else {
+			continue
+		}
 
 		chatUsers, err := w.chatStorage.GetChatUsers(poll.ChatID)
 		if err != nil {
@@ -84,7 +98,6 @@ func (w *Worker) Run() {
 			}
 		}
 
-		_ = w.pollStorage.RemovePoll(key)
 		if len(unvotedUsers) > 0 {
 			message := tgbotapi.NewMessage(poll.ChatID, w.BuildNotifyMessage(unvotedUsers))
 			_, _ = w.bot.Send(message)
