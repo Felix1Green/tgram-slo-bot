@@ -7,37 +7,37 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gomodule/redigo/redis"
 	"tgram-slo-bot/internal"
+	"time"
 )
 
 const (
 	componentName = "redis_chat_storage"
 )
 
-// TODO: add backoff on redis commands
-//type redisOptions struct {
-//	BackoffMaxValue int   `split_words:"true"`
-//	BackoffMaxTries int64 `split_words:"true"`
-//}
+type redisOptions struct {
+	BackoffMaxValue int   `split_words:"true"`
+	BackoffMaxTries int64 `split_words:"true"`
+}
 
 type RedisChatStorage struct {
-	log  internal.Logger
-	pool *redis.Pool
-	//backoffMaxValue time.Duration
-	//backoffMaxTries int64
+	log             internal.Logger
+	pool            *redis.Pool
+	backoffMaxValue time.Duration
+	backoffMaxTries int64
 }
 
 func NewFromEnv(pool *redis.Pool, logger internal.Logger) (*RedisChatStorage, error) {
-	//options := &redisOptions{}
-	//err := internal.EnvOptions(componentName, options)
-	//if err != nil {
-	//	return nil, err
-	//}
+	options := &redisOptions{}
+	err := internal.EnvOptions(componentName, options)
+	if err != nil {
+		return nil, err
+	}
 
 	return &RedisChatStorage{
-		pool: pool,
-		log:  logger,
-		//backoffMaxTries: options.BackoffMaxTries,
-		//backoffMaxValue: time.Duration(options.BackoffMaxValue) * time.Second,
+		pool:            pool,
+		log:             logger,
+		backoffMaxTries: options.BackoffMaxTries,
+		backoffMaxValue: time.Duration(options.BackoffMaxValue) * time.Second,
 	}, nil
 }
 
