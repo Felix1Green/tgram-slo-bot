@@ -172,3 +172,23 @@ func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string) s
 func (s *RedisPollStorage) createSimplePollKey(chatID int64, pollID string) string {
 	return fmt.Sprintf("%s:%d:%s", componentName, chatID, pollID)
 }
+
+//TODO: install backoff package
+//func (s *RedisPollStorage) backoffDo(conn redis.Conn, commandName string, args ...interface{}) (reply interface{}, err error) {
+//	backoffCfg := backoff.NewExponentialBackOff()
+//	backoffCfg.MaxInterval = s.backoffMaxValue
+//	retryCount := int64(0)
+//
+//	_ = backoff.Retry(func() error {
+//		if retryCount > s.backoffMaxTries {
+//			return nil
+//		}
+//
+//		reply, err = conn.Do(commandName, args...)
+//		retryCount++
+//
+//		return err
+//	}, backoffCfg)
+//
+//	return reply, err
+//}

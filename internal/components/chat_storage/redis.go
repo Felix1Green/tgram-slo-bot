@@ -96,3 +96,23 @@ func (s *RedisChatStorage) RegistrateNewUser(chatID int64, user *tgbotapi.User) 
 func (s *RedisChatStorage) getKey(chatID int64) string {
 	return fmt.Sprintf("%s:%d", componentName, chatID)
 }
+
+//TODO: install backoff package
+//func (s *RedisPollStorage) backoffDo(conn redis.Conn, commandName string, args ...interface{}) (reply interface{}, err error) {
+//	backoffCfg := backoff.NewExponentialBackOff()
+//	backoffCfg.MaxInterval = s.backoffMaxValue
+//	retryCount := int64(0)
+//
+//	_ = backoff.Retry(func() error {
+//		if retryCount > s.backoffMaxTries {
+//			return nil
+//		}
+//
+//		reply, err = conn.Do(commandName, args...)
+//		retryCount++
+//
+//		return err
+//	}, backoffCfg)
+//
+//	return reply, err
+//}

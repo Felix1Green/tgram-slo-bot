@@ -49,7 +49,7 @@ func (t *HandlerComposer) Listen() error {
 		} else if handler, ok := t.handlerConfig[update.Message.Text]; ok {
 			handler(&update, t.bot)
 		} else {
-			msg := tgbotapi.NewMessage(update.FromChat().ID, "I cant do this")
+			msg := tgbotapi.NewPhoto(update.FromChat().ID, tgbotapi.FilePath("./media/captcha.jpg"))
 			_, _ = t.bot.Send(msg)
 		}
 	}
