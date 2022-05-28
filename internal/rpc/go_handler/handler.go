@@ -70,9 +70,9 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 func questionBuilder(questionString string, opts ...*tgbotapi.User) string {
 	var (
 		sb         strings.Builder
-		lineFormat = "%s\n"
+		lineFormat = "@%s\n"
 	)
-	sb.WriteString(fmt.Sprintf(lineFormat, questionString))
+	sb.WriteString(fmt.Sprintf("%s\n", questionString))
 	for _, v := range opts {
 		sb.WriteString(fmt.Sprintf(lineFormat, v.UserName))
 	}
