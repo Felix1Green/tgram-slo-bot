@@ -16,11 +16,10 @@ var (
 	IncorrectInputKey = fmt.Errorf("inserted key is incorrect")
 )
 
-// TODO: add backoff on redis commands
-//type redisOptions struct {
-//	BackoffMaxValue int   `split_words:"true"`
-//	BackoffMaxTries int64 `split_words:"true"`
-//}
+type redisOptions struct {
+	BackoffMaxValue int   `split_words:"true"`
+	BackoffMaxTries int64 `split_words:"true"`
+}
 
 type Poll struct {
 	ChatID           int64
@@ -29,24 +28,24 @@ type Poll struct {
 }
 
 type RedisPollStorage struct {
-	log  internal.Logger
-	pool *redis.Pool
-	//backoffMaxValue time.Duration
-	//backoffMaxTries int64
+	log             internal.Logger
+	pool            *redis.Pool
+	backoffMaxValue time.Duration
+	backoffMaxTries int64
 }
 
 func NewFromEnv(pool *redis.Pool, logger internal.Logger) (*RedisPollStorage, error) {
-	//options := &redisOptions{}
-	//err := internal.EnvOptions(componentName, options)
-	//if err != nil {
-	//	return nil, err
-	//}
+	options := &redisOptions{}
+	err := internal.EnvOptions(componentName, options)
+	if err != nil {
+		return nil, err
+	}
 
 	return &RedisPollStorage{
-		pool: pool,
-		log:  logger,
-		//backoffMaxTries: options.BackoffMaxTries,
-		//backoffMaxValue: time.Duration(options.BackoffMaxValue) * time.Second,
+		pool:            pool,
+		log:             logger,
+		backoffMaxTries: options.BackoffMaxTries,
+		backoffMaxValue: time.Duration(options.BackoffMaxValue) * time.Second,
 	}, nil
 }
 
@@ -173,3 +172,23 @@ func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string) s
 func (s *RedisPollStorage) createSimplePollKey(chatID int64, pollID string) string {
 	return fmt.Sprintf("%s:%d:%s", componentName, chatID, pollID)
 }
+
+//TODO: install backoff package
+//func (s *RedisPollStorage) backoffDo(conn redis.Conn, commandName string, args ...interface{}) (reply interface{}, err error) {
+//	backoffCfg := backoff.NewExponentialBackOff()
+//	backoffCfg.MaxInterval = s.backoffMaxValue
+//	retryCount := int64(0)
+//
+//	_ = backoff.Retry(func() error {
+//		if retryCount > s.backoffMaxTries {
+//			return nil
+//		}
+//
+//		reply, err = conn.Do(commandName, args...)
+//		retryCount++
+//
+//		return err
+//	}, backoffCfg)
+//
+//	return reply, err
+//}
