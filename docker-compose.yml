@@ -19,7 +19,7 @@ services:
   service:
     build:
       context: ./
-      dockerfile: build/service.Dockerfile
+      dockerfile: service.Dockerfile
     ports:
       - "8888:8888"
     env_file:
@@ -30,7 +30,7 @@ services:
   cron:
     build:
       context: ./
-      dockerfile: build/cron.Dockerfile
+      dockerfile: cron.Dockerfile
     env_file:
       - dev.env
     ports:
