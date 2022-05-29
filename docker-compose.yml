@@ -18,7 +18,8 @@ services:
       - '--maxmemory-policy ${REDIS_POLICY:-noeviction}'
   service:
     build:
-      dockerfile: service.Dockerfile
+      context: ./
+      dockerfile: build/service.Dockerfile
     ports:
       - "8888:8888"
     env_file:
@@ -28,7 +29,8 @@ services:
       - redis
   cron:
     build:
-      dockerfile: cron.Dockerfile
+      context: ./
+      dockerfile: build/cron.Dockerfile
     env_file:
       - dev.env
     ports:
