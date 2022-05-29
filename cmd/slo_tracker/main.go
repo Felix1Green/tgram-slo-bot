@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// add cron
-	err = scheduler.AddFunc("@every 15m", worker.Run)
+	err = scheduler.AddFunc("@every 1m", worker.Run)
 	if err != nil {
 		log.Error(context.Background(), err)
 		return

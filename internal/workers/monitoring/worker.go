@@ -110,7 +110,7 @@ func (w *Worker) BuildNotifyMessage(users []string) string {
 		sb         strings.Builder
 		lineFormat = "@%s\n"
 	)
-	sb.WriteString(fmt.Sprintf("%s\n", "Пора ответить за игнорирование!"))
+	sb.WriteString(fmt.Sprintf("%s\n", "Слышь, проголосуй!"))
 	for _, v := range users {
 		sb.WriteString(fmt.Sprintf(lineFormat, v))
 	}

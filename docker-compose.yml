@@ -6,6 +6,16 @@ services:
       - "6379:6379"
     environment:
       - REDIS_REPLICATION_MODE=master
+    volumes:
+      - /home/redis_dump:/data
+    command:
+      - 'redis-server'
+      - '--loglevel ${REDIS_LOGLEVEL:-warning}'
+      - '--save 900 1'
+      - '--save 300 10'
+      - '--save 60 10000'
+      - '--maxmemory ${REDIS_MAXMEM:-50mb}'
+      - '--maxmemory-policy ${REDIS_POLICY:-noeviction}'
   service:
     build:
       context: ./
@@ -28,3 +38,5 @@ services:
     restart: always
     depends_on:
       - redis
+volumes:
+  redis:
