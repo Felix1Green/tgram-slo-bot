@@ -6,18 +6,19 @@ import (
 )
 
 type HandlerComposer struct {
-	log               internal.Logger
-	bot               *tgbotapi.BotAPI
-	updateConfig      tgbotapi.UpdateConfig
-	handlerConfig     map[string]internal.HandleFunc
-	pollUpdateHandler internal.HandleFunc
+	log                 internal.Logger
+	bot                 *tgbotapi.BotAPI
+	updateConfig        tgbotapi.UpdateConfig
+	handlerConfig       map[string]internal.HandleFunc
+	pollUpdateHandler   internal.HandleFunc
+	ChosenResultHandler internal.HandleFunc
 }
 
 type specifications struct {
 	TelegramToken string `split_words:"true"`
 }
 
-func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc, pollHandler internal.HandleFunc) (*HandlerComposer, error) {
+func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc, pollHandler internal.HandleFunc, chosenHandler internal.HandleFunc) (*HandlerComposer, error) {
 	options := &specifications{}
 	err := internal.EnvOptions("", options)
 	if err != nil {
@@ -31,22 +32,25 @@ func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc, p
 	u.Timeout = 60
 
 	return &HandlerComposer{
-		log:           logger,
-		handlerConfig: config,
-		bot:           bot,
-		updateConfig:  u,
+		log:                 logger,
+		handlerConfig:       config,
+		bot:                 bot,
+		updateConfig:        u,
+		pollUpdateHandler:   pollHandler,
+		ChosenResultHandler: chosenHandler,
 	}, nil
 }
 
 func (t *HandlerComposer) Listen() error {
 	updates := t.bot.GetUpdatesChan(t.updateConfig)
 	for update := range updates {
-		if update.Message == nil || update.Message.Text == "" {
-			continue
-		}
 		if update.PollAnswer != nil {
 			t.pollUpdateHandler(&update, t.bot)
-		} else if handler, ok := t.handlerConfig[update.Message.Text]; ok {
+		} else if update.CallbackQuery != nil {
+			t.ChosenResultHandler(&update, t.bot)
+		} else if update.Message == nil || update.Message.Text == "" || !update.Message.IsCommand() {
+			continue
+		} else if handler, ok := t.handlerConfig[update.Message.Command()]; ok {
 			handler(&update, t.bot)
 		} else {
 			msg := tgbotapi.NewPhoto(update.FromChat().ID, tgbotapi.FilePath("./media/no_way.png"))

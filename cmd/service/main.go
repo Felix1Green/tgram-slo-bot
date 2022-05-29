@@ -41,11 +41,11 @@ func main() {
 	)
 
 	handlerComposer, err := rpc.NewFromEnv(log, map[string]internal.HandleFunc{
-		"/go":     goHandler.Handle,
-		"/flip":   flipHandler.Handle,
-		"/random": randomHandler.Handle,
-		"/reg":    regHandler.Handle,
-	}, pollUpdateHandler.Handle)
+		"go":     goHandler.Handle,
+		"flip":   flipHandler.Handle,
+		"random": randomHandler.Handle,
+		"reg":    regHandler.Handle,
+	}, pollUpdateHandler.Handle, flipHandler.HandleChoice)
 	if err != nil {
 		log.Error(context.Background(), fmt.Sprintf("Handler composer initialization failed with error: %s", err.Error()))
 		return
