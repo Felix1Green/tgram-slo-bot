@@ -41,7 +41,7 @@ func NewFromEnv(logger internal.Logger, config map[string]internal.HandleFunc, p
 func (t *HandlerComposer) Listen() error {
 	updates := t.bot.GetUpdatesChan(t.updateConfig)
 	for update := range updates {
-		if update.Message == nil || update.Message.Text == "" || update.PollAnswer == nil {
+		if update.Message == nil || update.Message.Text == "" {
 			continue
 		}
 		if update.PollAnswer != nil {
@@ -49,7 +49,7 @@ func (t *HandlerComposer) Listen() error {
 		} else if handler, ok := t.handlerConfig[update.Message.Text]; ok {
 			handler(&update, t.bot)
 		} else {
-			msg := tgbotapi.NewPhoto(update.FromChat().ID, tgbotapi.FilePath("./media/captcha.jpg"))
+			msg := tgbotapi.NewPhoto(update.FromChat().ID, tgbotapi.FilePath("./media/no_way.png"))
 			_, _ = t.bot.Send(msg)
 		}
 	}
