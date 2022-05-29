@@ -52,7 +52,8 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		BaseChat: tgbotapi.BaseChat{
 			ChatID: chatID,
 		},
-		Question: questionBuilder("Идешь?", chatUsers...),
+		Question:    "Идешь?",
+		Explanation: questionBuilder(chatUsers...),
 		Options: []string{
 			"Да",
 			"Нет",
@@ -67,12 +68,11 @@ func (t *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	err = t.pollStorage.CreateNewPoll(chatID, msg.Poll.ID)
 }
 
-func questionBuilder(questionString string, opts ...*tgbotapi.User) string {
+func questionBuilder(opts ...*tgbotapi.User) string {
 	var (
 		sb         strings.Builder
 		lineFormat = "@%s\n"
 	)
-	sb.WriteString(fmt.Sprintf("%s\n", questionString))
 	for _, v := range opts {
 		sb.WriteString(fmt.Sprintf(lineFormat, v.UserName))
 	}
