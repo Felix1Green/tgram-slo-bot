@@ -11,6 +11,7 @@ import (
 	"tgram-slo-bot/internal/rpc"
 	"tgram-slo-bot/internal/rpc/flip_handler"
 	"tgram-slo-bot/internal/rpc/go_handler"
+	"tgram-slo-bot/internal/rpc/help_handler"
 	"tgram-slo-bot/internal/rpc/poll_update_handler"
 	"tgram-slo-bot/internal/rpc/random_handler"
 	"tgram-slo-bot/internal/rpc/reg_handler"
@@ -38,6 +39,7 @@ func main() {
 		randomHandler     = random_handler.New(log)
 		regHandler        = reg_handler.New(log, chatStorage)
 		pollUpdateHandler = poll_update_handler.New(log, pollStorage)
+		helpHandler       = help_handler.New(log)
 	)
 
 	handlerComposer, err := rpc.NewFromEnv(log, map[string]internal.HandleFunc{
@@ -45,6 +47,7 @@ func main() {
 		"flip":   flipHandler.Handle,
 		"random": randomHandler.Handle,
 		"reg":    regHandler.Handle,
+		"help":   helpHandler.Handle,
 	}, pollUpdateHandler.Handle, flipHandler.HandleChoice)
 	if err != nil {
 		log.Error(context.Background(), fmt.Sprintf("Handler composer initialization failed with error: %s", err.Error()))
