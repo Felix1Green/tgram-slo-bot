@@ -88,7 +88,7 @@ func (w *Worker) Run() {
 		}
 		// TODO: get all not voted users from one request
 		for _, user := range chatUsers {
-			voted, err := w.pollStorage.IsCurrentUserVoted(poll.ChatID, poll.PollID, user.ID)
+			voted, err := w.pollStorage.IsCurrentUserVoted(poll.PollID, user.ID)
 			if err != nil {
 				return
 			}

@@ -107,7 +107,7 @@ func (s *RedisPollStorage) RemovePoll(pollKey string) error {
 	return err
 }
 
-func (s *RedisPollStorage) SetUserVoted(chatID int64, pollID string, userId int64) error {
+func (s *RedisPollStorage) SetUserVoted(pollID string, userId int64) error {
 	var (
 		conn = s.pool.Get()
 		err  error
@@ -122,11 +122,11 @@ func (s *RedisPollStorage) SetUserVoted(chatID int64, pollID string, userId int6
 		}
 	}()
 
-	_, err = conn.Do("SADD", s.createSimplePollKey(chatID, pollID), userId)
+	_, err = conn.Do("SADD", s.createSimplePollKey(pollID), userId)
 	return err
 }
 
-func (s *RedisPollStorage) IsCurrentUserVoted(chatID int64, pollID string, userID int64) (bool, error) {
+func (s *RedisPollStorage) IsCurrentUserVoted(pollID string, userID int64) (bool, error) {
 	var (
 		conn = s.pool.Get()
 		err  error
@@ -141,7 +141,7 @@ func (s *RedisPollStorage) IsCurrentUserVoted(chatID int64, pollID string, userI
 		}
 	}()
 
-	isMember, err := redis.Bool(conn.Do("SISMEMBER", s.createSimplePollKey(chatID, pollID), userID))
+	isMember, err := redis.Bool(conn.Do("SISMEMBER", s.createSimplePollKey(pollID), userID))
 	return isMember, err
 }
 
@@ -169,8 +169,8 @@ func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string) s
 	return fmt.Sprintf("%s:%d:%s:%d", componentName, chatID, pollID, time.Now().Unix())
 }
 
-func (s *RedisPollStorage) createSimplePollKey(chatID int64, pollID string) string {
-	return fmt.Sprintf("%s:%d:%s", componentName, chatID, pollID)
+func (s *RedisPollStorage) createSimplePollKey(pollID string) string {
+	return fmt.Sprintf("%s:%s", componentName, pollID)
 }
 
 //TODO: install backoff package
