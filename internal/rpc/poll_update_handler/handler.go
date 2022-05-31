@@ -25,7 +25,7 @@ func New(log internal.Logger, storage poll_storage.Storage) *Handler {
 
 func (s *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	answer := update.PollAnswer
-	err := s.pollStorage.SetUserVoted(update.FromChat().ID, answer.PollID, answer.User.ID)
+	err := s.pollStorage.SetUserVoted(answer.PollID, answer.User.ID)
 	if err != nil {
 		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
 			"handlerName": handlerName,
