@@ -11,3 +11,8 @@ type Logger interface {
 }
 
 type HandleFunc func(update *tgbotapi.Update, bot *tgbotapi.BotAPI)
+
+type HandleChoice interface {
+	IsRightCommand(inputCmd string) bool
+	HandleChoice(update *tgbotapi.Update, bot *tgbotapi.BotAPI)
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math/rand"
+	"strings"
 	"tgram-slo-bot/internal"
 )
 
@@ -21,10 +22,11 @@ var (
 	tails           = "РЕШКА"
 	numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(eagle, eagle),
-			tgbotapi.NewInlineKeyboardButtonData(tails, tails),
+			tgbotapi.NewInlineKeyboardButtonData(eagle, createOptionData(eagle)),
+			tgbotapi.NewInlineKeyboardButtonData(tails, createOptionData(tails)),
 		),
 	)
+	incorrectChoiceError = fmt.Errorf("incorrect choice")
 )
 
 func New(logger internal.Logger) *Handler {
@@ -73,11 +75,30 @@ func (h *Handler) HandleChoice(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		flipResult = eagle
 	}
 
-	fmt.Println(update.CallbackQuery.Data)
-	if flipResult == update.CallbackQuery.Data {
+	if chosenOption, _ := getChosenOption(update.CallbackQuery.Data); flipResult == chosenOption {
 		CorrectlyGuessed = winner
 	}
 
 	message := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, fmt.Sprintf("@%s %s\nРезультат: %s", update.SentFrom().UserName, CorrectlyGuessed, flipResult))
 	_, _ = bot.Send(message)
+}
+
+func (h *Handler) IsRightCommand(inputCmd string) bool {
+	cmd := strings.Split(inputCmd, ":")
+	if len(cmd) < 1 {
+		return false
+	}
+	return cmd[0] == handlerName
+}
+
+func createOptionData(option string) string {
+	return fmt.Sprintf("%s:%s", handlerName, option)
+}
+
+func getChosenOption(inputCmd string) (string, error) {
+	option := strings.Split(inputCmd, ":")
+	if len(option) < 2 || len(option[1]) < 1 {
+		return "", incorrectChoiceError
+	}
+	return strings.Join(option[1:], ":"), nil
 }
