@@ -116,6 +116,7 @@ func (h *Handler) HandleChoice(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		Options: []string{
 			"Да",
 			"Нет",
+			"Скажу точно перед общим сбором",
 		},
 	}
 	_, _ = bot.Send(tgbotapi.NewMessage(chatID, pollBuilder(chatUsers...)))
