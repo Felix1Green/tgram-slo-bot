@@ -125,7 +125,7 @@ func (h *Handler) HandleChoice(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		return
 	}
 
-	err = h.pollStorage.CreateNewPoll(chatID, msg.Poll.ID)
+	err = h.pollStorage.CreateNewPoll(chatID, msg.Poll.ID, msg.MessageID)
 
 	editMessage := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, fmt.Sprintf("Пользователем @%s выбрана игра: %s", update.SentFrom().UserName, chosenGame))
 	_, err = bot.Send(editMessage)

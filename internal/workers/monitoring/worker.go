@@ -99,7 +99,14 @@ func (w *Worker) Run() {
 		}
 
 		if len(unvotedUsers) > 0 {
-			message := tgbotapi.NewMessage(poll.ChatID, w.BuildNotifyMessage(unvotedUsers))
+			message := tgbotapi.MessageConfig{
+				BaseChat: tgbotapi.BaseChat{
+					ChatID:           poll.ChatID,
+					ReplyToMessageID: poll.MsgID,
+				},
+				Text:                  w.BuildNotifyMessage(unvotedUsers),
+				DisableWebPagePreview: false,
+			}
 			_, _ = w.bot.Send(message)
 		}
 	}
