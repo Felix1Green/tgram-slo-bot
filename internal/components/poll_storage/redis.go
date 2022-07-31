@@ -24,6 +24,7 @@ type redisOptions struct {
 type Poll struct {
 	ChatID           int64
 	PollID           string
+	MsgID            int
 	CreatedTimeStamp int64
 }
 
@@ -49,7 +50,7 @@ func NewFromEnv(pool *redis.Pool, logger internal.Logger) (*RedisPollStorage, er
 	}, nil
 }
 
-func (s *RedisPollStorage) CreateNewPoll(chatID int64, pollID string) error {
+func (s *RedisPollStorage) CreateNewPoll(chatID int64, pollID string, msgID int) error {
 	var (
 		conn = s.pool.Get()
 		err  error
@@ -64,7 +65,7 @@ func (s *RedisPollStorage) CreateNewPoll(chatID int64, pollID string) error {
 		}
 	}()
 
-	_, err = conn.Do("SADD", mainKey, s.createPollTimestampKey(chatID, pollID))
+	_, err = conn.Do("SADD", mainKey, s.createPollTimestampKey(chatID, pollID, msgID))
 
 	return err
 }
@@ -78,12 +79,14 @@ func (s *RedisPollStorage) GetPollInfoFromKey(key string) (*Poll, error) {
 	var (
 		chatID, _    = strconv.Atoi(splitter[1])
 		pollID       = splitter[2]
-		timestamp, _ = strconv.Atoi(splitter[3])
+		msgID, _     = strconv.Atoi(splitter[3])
+		timestamp, _ = strconv.Atoi(splitter[4])
 	)
 
 	return &Poll{
 		ChatID:           int64(chatID),
 		PollID:           pollID,
+		MsgID:            msgID,
 		CreatedTimeStamp: int64(timestamp),
 	}, nil
 }
@@ -165,8 +168,8 @@ func (s *RedisPollStorage) GetActivePollKeys() ([]string, error) {
 	return polls, err
 }
 
-func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string) string {
-	return fmt.Sprintf("%s:%d:%s:%d", componentName, chatID, pollID, time.Now().Unix())
+func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string, msgID int) string {
+	return fmt.Sprintf("%s:%d:%s:%d:%d", componentName, chatID, pollID, msgID, time.Now().Unix())
 }
 
 func (s *RedisPollStorage) createSimplePollKey(pollID string) string {
