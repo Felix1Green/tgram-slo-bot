@@ -55,8 +55,13 @@ func (s *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			registeredUsers = append(registeredUsers, user)
 		}
 	}
+	pingMessage := ""
+	updateText := strings.Split(update.Message.Text, " ")
+	if len(updateText) >= 2 || len(updateText[1]) >= 1 {
+		pingMessage = strings.Join(updateText[1:], " ")
+	}
 
-	msg := tgbotapi.NewMessage(update.FromChat().ID, pingBuilder(registeredUsers...))
+	msg := tgbotapi.NewMessage(update.FromChat().ID, pingMessage+pingBuilder(registeredUsers...))
 	_, err = bot.Send(msg)
 }
 
