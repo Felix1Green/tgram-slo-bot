@@ -25,7 +25,11 @@ func New(log internal.Logger, storage poll_storage.Storage) *Handler {
 
 func (s *Handler) Handle(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	answer := update.PollAnswer
+	optionId := answer.OptionIDs[0]
 	err := s.pollStorage.SetUserVoted(answer.PollID, answer.User.ID)
+	if (optionId == 0 || optionId == 2) && err == nil {
+		err = s.pollStorage.SetUserRegistered(answer.PollID, answer.User.ID)
+	}
 	if err != nil {
 		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
 			"handlerName": handlerName,
