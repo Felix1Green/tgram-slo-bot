@@ -15,6 +15,7 @@ import (
 	"tgram-slo-bot/internal/rpc/games_handler"
 	"tgram-slo-bot/internal/rpc/go_handler"
 	"tgram-slo-bot/internal/rpc/help_handler"
+	"tgram-slo-bot/internal/rpc/ping_handler"
 	"tgram-slo-bot/internal/rpc/poll_update_handler"
 	"tgram-slo-bot/internal/rpc/random_handler"
 	"tgram-slo-bot/internal/rpc/reg_handler"
@@ -46,6 +47,7 @@ func main() {
 		helpHandler       = help_handler.New(log)
 		excuseHandler     = excuse_handler.New(log)
 		gameHandler       = games_handler.New(log, gamesStorage)
+		pingHandler       = ping_handler.New(log, pollStorage, chatStorage)
 	)
 
 	handlerComposer, err := rpc.NewFromEnv(
@@ -58,6 +60,7 @@ func main() {
 			"help":   helpHandler.Handle,
 			"excuse": excuseHandler.Handle,
 			"add":    gameHandler.Handle,
+			"ping":   pingHandler.Handle,
 		},
 		pollUpdateHandler.Handle,
 		[]internal.HandleChoice{

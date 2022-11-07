@@ -66,6 +66,9 @@ func (s *RedisPollStorage) CreateNewPoll(chatID int64, pollID string, msgID int)
 	}()
 
 	_, err = conn.Do("SADD", mainKey, s.createPollTimestampKey(chatID, pollID, msgID))
+	if err == nil {
+		err = s.SetActiveChatPoll(chatID, pollID)
+	}
 
 	return err
 }
@@ -168,12 +171,91 @@ func (s *RedisPollStorage) GetActivePollKeys() ([]string, error) {
 	return polls, err
 }
 
+func (s *RedisPollStorage) SetUserRegistered(pollID string, userId int64) error {
+	var (
+		conn = s.pool.Get()
+		err  error
+	)
+	defer func() {
+		_ = conn.Close()
+		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
+			"componentName": componentName,
+		})
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+	}()
+
+	_, err = conn.Do("SADD", s.createRegisteredPollKey(pollID), userId)
+	return err
+}
+
+func (s *RedisPollStorage) IsCurrentUserRegistered(pollID string, userID int64) (bool, error) {
+	var (
+		conn = s.pool.Get()
+		err  error
+	)
+	defer func() {
+		_ = conn.Close()
+		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
+			"componentName": componentName,
+		})
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+	}()
+
+	isMember, err := redis.Bool(conn.Do("SISMEMBER", s.createRegisteredPollKey(pollID), userID))
+	return isMember, err
+}
+
+func (s *RedisPollStorage) SetActiveChatPoll(chatId int64, pollId string) error {
+	var (
+		conn = s.pool.Get()
+		err  error
+	)
+	defer func() {
+		_ = conn.Close()
+		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
+			"componentName": componentName,
+		})
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+	}()
+
+	_, err = conn.Do("SET", chatId, pollId)
+	return err
+}
+
+func (s *RedisPollStorage) GetActiveChatPoll(chatId int64) (string, error) {
+	var (
+		conn = s.pool.Get()
+		err  error
+	)
+	defer func() {
+		_ = conn.Close()
+		ctx := s.log.WithFields(context.Background(), map[string]interface{}{
+			"componentName": componentName,
+		})
+		if err != nil {
+			s.log.Error(ctx, err)
+		}
+	}()
+
+	return redis.String(conn.Do("GET", chatId))
+}
+
 func (s *RedisPollStorage) createPollTimestampKey(chatID int64, pollID string, msgID int) string {
 	return fmt.Sprintf("%s:%d:%s:%d:%d", componentName, chatID, pollID, msgID, time.Now().Unix())
 }
 
 func (s *RedisPollStorage) createSimplePollKey(pollID string) string {
 	return fmt.Sprintf("%s:%s", componentName, pollID)
+}
+
+func (s *RedisPollStorage) createRegisteredPollKey(pollId string) string {
+	return fmt.Sprintf("%s:%s:%s", componentName, pollId, "yes")
 }
 
 //TODO: install backoff package
